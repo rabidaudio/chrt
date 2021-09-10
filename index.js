@@ -8,7 +8,8 @@ const { hideBin } = require('yargs/helpers')
 const parserFactories = {
   'csv': require('./csvParser'),
   'jsonl': require('./jsonlParser'),
-  'json': require('./jsonParser')
+  'json': require('./jsonParser'),
+  'ascii': require('./asciiTableParser')
 }
 
 const argv = yargs(hideBin(process.argv))
@@ -16,14 +17,26 @@ const argv = yargs(hideBin(process.argv))
   .option('format', {
     alias: 'f',
     describe: 'The format of the incoming data',
-    choices: [ ...Object.keys(parserFactories), 'tsv']
+    choices: [ ...Object.keys(parserFactories), 'tsv', 'md', 'psql']
   })
   .middleware(argv => {
     if (argv.format === 'tsv') {
       return { ...argv, format: 'csv', delimiter: '\t' }
     }
+    if (argv.format === 'md') {
+      return { ...argv, format: 'ascii', delimiter: '|', horizontalSeparator: '-' }
+    }
+    if (argv.format === 'psql') {
+      return { ...argv, format: 'ascii', delimiter: '|' }
+    }
     return argv
   })
+  .group(['delimiter', 'borders', 'horizontal_separator'], 'ASCII Table Parser:')
+  .boolean('borders')
+  .boolean('headers')
+  .default('headers', true)
+  .option('horizontal_separator')
+
   .group([
     'delimiter',
     'comment',

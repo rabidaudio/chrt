@@ -4,16 +4,17 @@ const { Transform } = require('stream')
 // load the entire stream first
 class JsonArrayTransform extends Transform {
   constructor(options) {
-    super(options)
+    super({ readableObjectMode: true, ...options })
     this.chunks = []
   }
 
   _transform(data, encoding, callback) {
     this.chunks.push(data)
+    callback()
   }
   
   _flush(callback) {
-    const data = JSON.parse(Buffer.concat(chunks))
+    const data = JSON.parse(Buffer.concat(this.chunks))
     if (!Array.isArray(data)) {
       callback(new Error('Provided JSON data is not an array'))
       return
