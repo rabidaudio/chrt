@@ -7,10 +7,10 @@ const LimitTransform = require('./limit')
 // parserFactory is a function that takes argv and the raw data stream
 // and returns a stream of record objects
 const parserFactories = {
-  'csv': require('./csvParser'),
-  'jsonl': require('./jsonlParser'),
-  'json': require('./jsonParser'),
-  'ascii': require('./asciiTableParser')
+  csv: require('./csvParser'),
+  jsonl: require('./jsonlParser'),
+  json: require('./jsonParser'),
+  ascii: require('./asciiTableParser')
   // TODO: fixed width tables
 }
 
@@ -19,7 +19,7 @@ const argv = yargs(hideBin(process.argv))
   .option('format', {
     alias: 'f',
     describe: 'The format of the incoming data',
-    choices: [ ...Object.keys(parserFactories), 'tsv', 'md', 'psql']
+    choices: [...Object.keys(parserFactories), 'tsv', 'md', 'psql']
   })
   .demandOption(['format']) // TODO: auto-detect
   .middleware(argv => {
@@ -50,10 +50,10 @@ const argv = yargs(hideBin(process.argv))
     alias: 's',
     describe: 'Sort the data by the independent variable. Only applicable if an xaxis is supplied.',
     type: 'boolean',
-    default: false,
+    default: false
     // implies: 'xaxis' // breaks with default
   })
-  
+
   .group(['height', 'offset', 'padding', 'colors'], 'Display Options:')
   .option('width', {
     alias: 'w',
@@ -111,7 +111,7 @@ const argv = yargs(hideBin(process.argv))
     'rtrim',
     'trim',
     'skip_empty_lines',
-    'skip_lines_with_error',
+    'skip_lines_with_error'
   ], 'CSV Parser:')
   .option('delimiter')
   .option('comment')
@@ -126,7 +126,7 @@ const argv = yargs(hideBin(process.argv))
 
   .argv
 
-function main() {
+function main () {
   const parserFactory = parserFactories[argv.format]
   const rows = []
   let stream = parserFactory(argv, process.stdin)
@@ -134,18 +134,18 @@ function main() {
   if (argv.width) {
     stream = stream.pipe(new LimitTransform(argv.width))
   }
-  
+
   stream.on('data', d => rows.push(d))
   stream.on('error', e => { throw e })
   stream.on('end', () => draw(rows))
 }
 
-function draw(rows) {
+function draw (rows) {
   if (rows.length === 0) {
     console.error('No data to display.')
     process.exit(1)
   }
-  var columns = Object.keys(rows[0])
+  let columns = Object.keys(rows[0])
   if (columns.length === 0) {
     console.error('No columns to display.')
     process.exit(1)
@@ -161,7 +161,7 @@ function draw(rows) {
       rows.sort(sortByColumn(xaxis))
     }
   }
-  
+
   if (argv.series !== undefined) {
     columns = argv.series.map(s => {
       const index = findColumnIndex(columns, s)
@@ -183,7 +183,7 @@ function draw(rows) {
   }
 
   // TODO: breakdown, allowing a column to be used as a series selector
-  
+
   const data = columns.reduce((data, column) => ({ [column]: [], ...data }), {})
   for (const rowIndex in rows) {
     for (const column of columns) {
@@ -203,22 +203,22 @@ function draw(rows) {
   }))
 }
 
-function findColumnIndex(columns, value) {
+function findColumnIndex (columns, value) {
   const index = columns.indexOf(value)
   if (index > -1) {
     return index
   }
   const asIndex = parseInt(value, 10)
-  if (asIndex !== NaN && asIndex >= 0 && asIndex < columns.length) {
+  if (isFinite(asIndex) && asIndex >= 0 && asIndex < columns.length) {
     return asIndex
   }
   return null
 }
 
-function sortByColumn(column) {
+function sortByColumn (column) {
   return (a, b) => {
     const aval = a[column]
-    const bval =  b[column]
+    const bval = b[column]
     if (aval < bval) {
       return -1
     }
