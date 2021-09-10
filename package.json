@@ -14,6 +14,9 @@
   "engines": {
     "node": ">=14.17.2"
   },
+  "bin": {
+    "chrt": "./index.js"
+  },
   "dependencies": {
     "asciichart": "^1.5.25",
     "csv-parse": "^4.16.3",

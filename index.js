@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const asciichart = require('asciichart')
